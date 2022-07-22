@@ -20,7 +20,7 @@ if($service_input -notmatch '^\d+$') { # If input is a service name
     $service_ID = $service_input
 }
 
-$service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$service_ID" -Headers $auth_headers
+$service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$service_ID" -Headers $auth_headers # Call to the API needs to be done again as $services does not contain all necessary data
 Write-Host $service_ID
 Write-Host ($service | Format-List -Force | Out-String)
 $fields = @{
@@ -28,7 +28,6 @@ $fields = @{
     shortDescription=$service.ShortDescription
     longDescription=$service.LongDescription
     requestApplicationID=$service.RequestApplicationID
-    requestTypeID=$service.RequestTypeID
     requestTypeName=$service.RequestTypeName
     requestText=$service.RequestText
 }
