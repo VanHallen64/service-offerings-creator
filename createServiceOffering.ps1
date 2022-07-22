@@ -21,13 +21,13 @@ $auth_headers = @{
 $services = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services" -Headers $auth_headers
 
 if($service_input -notmatch '^\d+$') { # If input is a service name   
-    $service_ID = ($services |?{$_.Name -eq $service_input}).ID
+    $service_ID = ($services | Where-Object {$_.Name -eq $service_input}).ID
 } else {
     $service_ID = $service_input
 }
 
 $service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$service_ID" -Headers $auth_headers # Call to the API needs to be done again as $services does not contain all necessary data
-#Write-Host ($service | Format-List -Force | Out-String)
+# Write-Host ($service | Format-List -Force | Out-String)
 
 #--- Create new offering, fill out and save
 $Driver = Start-SeFirefox
@@ -55,6 +55,23 @@ Invoke-SeClick -Element $SourceBtn
 $CurrentField = Find-SeElement -Wait -Timeout 10 -Driver $Driver -XPath '//div[@id="cke_1_contents"]//textarea'
 Send-SeKeys -Element $CurrentField -Keys $service.LongDescription
 
+# Manager
+$CloseBtn = Find-SeElement -Driver $Driver -CssSelector ".closebutton"
+Invoke-SeClick -Element $CloseBtn
+$CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_taluManager_txtinput"
+
+if ($service.ManagingGroupID -eq 0) { # If Manager is an individual
+    Send-SeKeys -Element $CurrentField -Keys $service.ManagerFullName
+    #$CurrentField = Find-SeElement -Driver $Driver -XPath "//ul[@id='ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed']//li[@rel=$($service.ManagerUid)]"
+    $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($service.ManagerUid)']"
+} else { # If Manager is a group
+    Send-SeKeys -Element $CurrentField -Keys $service.ManagingGroupName
+    $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($service.ManagingGroupID)']"
+    #$CurrentField = Find-SeElement -Driver $Driver -XPath "//ul[@id='ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed']//li[@rel=$($service.ManagingGroupID)]"
+}
+
+Invoke-SeClick -Element $CurrentField
+
 # Request Application Type
 $Option = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_ddlRequestApplication"
 $SelectElement = [OpenQA.Selenium.Support.UI.SelectElement]::new($Option)
@@ -73,7 +90,7 @@ Send-SeKeys -Element $CurrentField -Keys $($service.RequestText)
 # Tags
 $tags = @()
 do {
-    $tag = (Read-Host "Please enter the tags. Enter '-' to finish")
+    $tag = (Read-Host "Please enter the tags one by one, and enter "-" to finish")
     if ($tag -match '[a-zA-z]') {
         $tags += $tag
     } elseif($tag -ne '-') {
@@ -85,7 +102,7 @@ foreach ($tag in $tags) {
     Write-Host $tag
     $CurrentField = Find-SeElement -Driver $Driver -Id "s2id_autogen1"
     Send-SeKeys -Element $CurrentField $tag
-    $CurrentField = $Driver.FindElements([OpenQA.Selenium.By]::classname("select2-result-selectable")) |?{$_.Text -eq $tag}
+    $CurrentField = $Driver.FindElements([OpenQA.Selenium.By]::classname("select2-result-selectable")) | Where-Object {$_.Text -eq $tag}
     Invoke-SeClick -Element $CurrentField
 }
 
