@@ -1,9 +1,16 @@
-function Get-CurrentLineNumber { # To debug random prints
-    $MyInvocation.ScriptLineNumber
-}
-
 # Get service name
 $service_input= Read-Host "Enter service name or service ID"
+# To prompt for tags rather than taking arguments
+$tags = @()
+Write-Host "Please enter the tags for this service one by one, and enter "-" to finish:"
+do {
+    $tag = Read-Host
+    if ($tag -match '[a-zA-z]') {
+        $tags += $tag
+    } elseif($tag -ne '-') {
+        Write-Host "Tag not added -invalid"
+    }
+} until ($tag -eq '-')
 
 $LoginUrl = "https://langara.teamdynamix.com/SBTDWebApi/api/auth/loginadmin"
 $LoginBody = @{
@@ -31,11 +38,14 @@ $service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com
 
 #--- Create new offering, fill out and save
 $Driver = Start-SeFirefox
+$WindowSize = [System.Drawing.Size]::new(800, 700)
+$driver.Manage().Window.Size = $WindowSize
+
 Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$service_ID" -Driver $Driver
 Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
 
 # Copy form and settings from parent service
-$Checkbox = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_chkCopyServiceSettings"
+$Checkbox = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_chkCopyServiceSettings"
 Invoke-SeClick -Element $Checkbox
 
 # Name
@@ -88,18 +98,7 @@ $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpCont
 Send-SeKeys -Element $CurrentField -Keys $($service.RequestText)
 
 # Tags
-$tags = @()
-do {
-    $tag = (Read-Host "Please enter the tags one by one, and enter "-" to finish")
-    if ($tag -match '[a-zA-z]') {
-        $tags += $tag
-    } elseif($tag -ne '-') {
-        Write-Host "Tag not added -invalid"
-    }
-} until ($tag -eq '-')
-
 foreach ($tag in $tags) {
-    Write-Host $tag
     $CurrentField = Find-SeElement -Driver $Driver -Id "s2id_autogen1"
     Send-SeKeys -Element $CurrentField $tag
     $CurrentField = $Driver.FindElements([OpenQA.Selenium.By]::classname("select2-result-selectable")) | Where-Object {$_.Text -eq $tag}
