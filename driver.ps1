@@ -1,7 +1,7 @@
 . "$PSScriptRoot\Modules\ServiceOffering\ServiceOffering.ps1"
 . "$PSScriptRoot\Modules\GTSServiceOffering\GTSServiceOffering.ps1"
 . "$PSScriptRoot\functionTester.ps1"
-. "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
+Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 
 # Get service name
 $service_input = Read-Host "Enter service name or service ID"
@@ -58,4 +58,4 @@ Switch-SeWindow -Driver $Driver -Window $Windows[1]
 
 New-GTSServiceOffering
 
-# Stop-SeDriver -Driver $Driver
+Stop-SeDriver -Driver $Driver
