@@ -1,5 +1,5 @@
-. "$PSScriptRoot\Modules\ServiceOffering\createServiceOffering.ps1"
-. "$PSScriptRoot\Modules\GTSServiceOffering\createGTSServiceOffering.ps1"
+. "$PSScriptRoot\Modules\ServiceOffering\ServiceOffering.ps1"
+. "$PSScriptRoot\Modules\GTSServiceOffering\GTSServiceOffering.ps1"
 . "$PSScriptRoot\functionTester.ps1"
 . "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 
