@@ -29,7 +29,6 @@ function New-ServiceOffering {
     $CloseBtn = Find-SeElement -Driver $Driver -CssSelector ".closebutton"
     Invoke-SeClick -Element $CloseBtn
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_taluManager_txtinput"
-
     if ($service.ManagingGroupID -eq 0) { # If Manager is an individual
         Send-SeKeys -Element $CurrentField -Keys $service.ManagerFullName
         $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($service.ManagerUid)']"
@@ -37,7 +36,6 @@ function New-ServiceOffering {
         Send-SeKeys -Element $CurrentField -Keys $service.ManagingGroupName
         $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($service.ManagingGroupID)']"
     }
-
     Invoke-SeClick -Element $CurrentField
 
     # Request Application Type
