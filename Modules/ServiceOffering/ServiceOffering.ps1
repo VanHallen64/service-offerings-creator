@@ -1,17 +1,19 @@
 #------ Create Main Service Offering ------#
 
 function New-ServiceOffering {
-    
-    # Get tags
+    # Get tags from original service
     Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceDet?ID=$service_ID" -Driver $Driver
-    $tags = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_cpContent_cpContent_divTags']/a"
-    Write-Host ($ServiceTags | Format-List -Force | Out-String)
+    $ServiceTagsElements = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_cpContent_cpContent_divTags']/a"
+    $ServiceTags = @()
+    foreach ($tag in $ServiceTagsElements) {  
+        $tagName = $tag.Text
+        $ServiceTags += $tagName
+    }
     
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$service_ID" -Driver $Driver | Out-null
-    Write-Host ($ServiceTags | Format-List -Force | Out-String)
-    
+    # Start service creation
+    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$service_ID" -Driver $Driver
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
-
+ 
     # Copy form and settings from parent service
     $Checkbox = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_chkCopyServiceSettings"
     Invoke-SeClick -Element $Checkbox
@@ -62,12 +64,11 @@ function New-ServiceOffering {
     Send-SeKeys -Element $CurrentField -Keys $($service.RequestText)
 
     # Tags
-    if($tags.count -gt 0) {
-        foreach ($tag in $tags) {  
-            $tagName = Get-SeElementAttribute -Element $tag -Attribute "title"
+    if($ServiceTags.count -gt 0) {
+        foreach ($tag in $ServiceTags) {  
             $CurrentField = Find-SeElement -Driver $Driver -Id "s2id_autogen1"
-            Send-SeKeys -Element $tagName
-            $CurrentField = $Driver.FindElements([OpenQA.Selenium.By]::classname("select2-result-selectable")) | Where-Object {$_.Text -eq $tagName}
+            Send-SeKeys -Element $CurrentField -Keys $tag
+            $CurrentField = $Driver.FindElements([OpenQA.Selenium.By]::classname("select2-result-selectable")) | Where-Object {$_.Text -eq $tag}
             Invoke-SeClick -Element $CurrentField
         }
     }
