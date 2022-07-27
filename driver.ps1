@@ -1,16 +1,21 @@
-﻿Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+﻿# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 . "$PSScriptRoot\Modules\ServiceOffering\ServiceOffering.ps1"
 . "$PSScriptRoot\Modules\GTSServiceOffering\GTSServiceOffering.ps1"
 Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 Import-Module "$PSScriptRoot\Modules\AnyBox\AnyBox.psd1"
 
-$prompt = New-AnyBoxPrompt -Name "Input" -Message 'Service name or service ID' -ValidateNotEmpty
-$ServiceName = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
-$ServiceName = $ServiceName.Input
+$prompt = New-AnyBoxPrompt -Name "Name" -Message 'Service name or service ID' -ValidateNotEmpty
+$ServiceNameInput = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
+$ServiceName = $ServiceNameInput.Name
 
-$prompt = New-AnyBoxPrompt -Name "Input" -Message 'Short name of the service for general support. This will generate General -shortname- Support' -ValidateNotEmpty
-$ServiceShortName = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
-$ServiceShortName = $ServiceShortName.Input
+$prompt = New-AnyBoxPrompt -Name "Name" -Message 'Short name of the service for general support. This will generate General -shortname- Support' -ValidateNotEmpty
+$ServiceShortNameInput = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
+$ServiceShortName = $ServiceShortNameInput.Name
+
+if ($ServiceNameInput.Cancel -or $ServiceShortNameInput.Cancel) {
+    Show-AnyBox -Message "No service information provided" -Buttons 'Ok'
+    Exit
+}
 
 # Api connection
 $LoginUrl = "https://langara.teamdynamix.com/SBTDWebApi/api/auth/loginadmin"
