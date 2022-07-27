@@ -1,13 +1,16 @@
+﻿Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 . "$PSScriptRoot\Modules\ServiceOffering\ServiceOffering.ps1"
 . "$PSScriptRoot\Modules\GTSServiceOffering\GTSServiceOffering.ps1"
-. "$PSScriptRoot\functionTester.ps1"
 Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
+Import-Module "$PSScriptRoot\Modules\AnyBox\AnyBox.psd1"
 
-# Get service name
-$ServiceInput = Read-Host "Enter service name or service ID"
+$prompt = New-AnyBoxPrompt -Name "Input" -Message 'Service name or service ID' -ValidateNotEmpty
+$ServiceName = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
+$ServiceName = $ServiceName.Input
 
-# Short name for General Support
-$ServiceShortName = Read-Host "Enter a short name for the service for general support"
+$prompt = New-AnyBoxPrompt -Name "Input" -Message 'Short name of the service for general support. This will generate General -shortname- Support' -ValidateNotEmpty
+$ServiceShortName = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
+$ServiceShortName = $ServiceShortName.Input
 
 # Api connection
 $LoginUrl = "https://langara.teamdynamix.com/SBTDWebApi/api/auth/loginadmin"
@@ -22,10 +25,10 @@ $auth_headers = @{
 $Services = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services" -Headers $auth_headers
 
 # Get original service data
-if($ServiceInput -notmatch '^\d+$') { # If input is a service name   
-    $service_ID = ($Services | Where-Object {$_.Name -eq $ServiceInput}).ID
+if($ServiceName -notmatch '^\d+$') { # If input is a service name   
+    $service_ID = ($Services | Where-Object {$_.Name -eq $ServiceName}).ID
 } else {
-    $service_ID = $ServiceInput
+    $service_ID = $ServiceName
 }
 $service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$service_ID" -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
 # Write-Host ($service | Format-List -Force | Out-String)
