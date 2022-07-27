@@ -49,9 +49,9 @@ function New-GTSServiceOffering {
     Send-SeKeys -Element $CurrentField -Keys "General $ServiceShortName Support"
 
     # Tags
-    $tags = @("general", "technical", "support", "GTS")
+    $GeneralTags = @("general", "technical", "support", "GTS")
 
-    foreach ($tag in $tags) {
+    foreach ($tag in $GeneralTags) {
         $CurrentField = Find-SeElement -Driver $Driver -Id "s2id_autogen1"
         Send-SeKeys -Element $CurrentField $tag
         $CurrentField = $Driver.FindElements([OpenQA.Selenium.By]::classname("select2-result-selectable")) | Where-Object {$_.Text -eq $tag}

@@ -4,23 +4,23 @@
 Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 
 # Get service name
-$service_input = Read-Host "Enter service name or service ID"
+$ServiceInput = Read-Host "Enter service name or service ID"
 
 # Short name for General Support
 $ServiceShortName = Read-Host "Enter a short name for the service for general support"
 
-# Get tags
-$tags = @()
-Write-Host "Please enter the tags for this service one by one, and enter '-' to finish:"
-do {
-    $tag = Read-Host
-    if ($tag -match '[a-zA-z]') {
-        $tags += $tag
-    } elseif ($tag -ne '-') {
-        Write-Host "Tag not added -invalid"
-    }
-} until ($tag -eq '-')
-Write-Host "`n"
+# # Get tags
+# $tags = @()
+# Write-Host "Please enter the tags for this service one by one, and enter '-' to finish:"
+# do {
+#     $tag = Read-Host
+#     if ($tag -match '[a-zA-z]') {
+#         $tags += $tag
+#     } elseif ($tag -ne '-') {
+#         Write-Host "Tag not added -invalid"
+#     }
+# } until ($tag -eq '-')
+# Write-Host "`n"
 
 # Api connection
 $LoginUrl = "https://langara.teamdynamix.com/SBTDWebApi/api/auth/loginadmin"
@@ -36,10 +36,10 @@ $auth_headers = @{
 $services = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services" -Headers $auth_headers
 
 # Get original service data
-if($service_input -notmatch '^\d+$') { # If input is a service name   
-    $service_ID = ($services | Where-Object {$_.Name -eq $service_input}).ID
+if($ServiceInput -notmatch '^\d+$') { # If input is a service name   
+    $service_ID = ($services | Where-Object {$_.Name -eq $ServiceInput}).ID
 } else {
-    $service_ID = $service_input
+    $service_ID = $ServiceInput
 }
 $service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$service_ID" -Headers $auth_headers # Call to the API needs to be done again as $services does not contain all necessary data
 # Write-Host ($service | Format-List -Force | Out-String)
