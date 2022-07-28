@@ -1,6 +1,7 @@
 ﻿# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 . "$PSScriptRoot\Modules\ServiceOffering\ServiceOffering.ps1"
 . "$PSScriptRoot\Modules\GTSServiceOffering\GTSServiceOffering.ps1"
+. "$PSScriptRoot\Modules\AutomationRule\New-AutomationRule.ps1"
 Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 Import-Module "$PSScriptRoot\Modules\AnyBox\AnyBox.psd1"
 
