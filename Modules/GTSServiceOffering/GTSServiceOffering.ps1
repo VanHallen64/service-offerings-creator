@@ -1,7 +1,7 @@
 #------ Create General Service Offering ------#
 
 function New-GTSServiceOffering($ServiceId, $GTSServiceOfferingName) {
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId" -Driver $Driver
+    Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId") -Driver $Driver
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
 
     # Name

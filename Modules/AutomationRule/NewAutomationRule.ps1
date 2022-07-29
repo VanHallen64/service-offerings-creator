@@ -1,9 +1,8 @@
 #------ Create General Service Offering ------#
 
 function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServiceOfferingName, $ServiceName, $EvalOrder) {
-    Write-Host $ServiceOfferingId
     # Get ticket designated asignee
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/TicketRequests/PreviewForm?id=$ServiceOfferingId&previewMode=1&requestInitiator=ServiceOffering" -Driver $Driver
+    Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/TicketRequests/PreviewForm?id=$ServiceOfferingId&previewMode=1&requestInitiator=ServiceOffering") -Driver $Driver
     $Assignee = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "select2-chosen-7"
     Write-Host ($AssigneeId | Format-List -Force | Out-String)
     $Assignee = $Assignee.Text
@@ -11,7 +10,8 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
         $AssigneeShort = $Assignee.Substring(0,$Assignee.Length-8)
     }
 
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDAdmin/1cc3ff6f-33a6-4148-b145-f5581a4f32bd/82/AutomationRules/Index?Component=9" -Driver $Driver
+    # New service
+    Enter-SeUrl ("$Domain"+"TDAdmin/1cc3ff6f-33a6-4148-b145-f5581a4f32bd/82/AutomationRules/Index?Component=9") -Driver $Driver
     $NewBtn = Find-SeElement -Wait -Timeout 60 -Driver $Driver -XPath '//a[@class="btn btn-primary"]'
     Invoke-SeClick -Element $NewBtn
 

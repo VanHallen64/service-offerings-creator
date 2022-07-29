@@ -2,11 +2,11 @@
 
 function New-ServiceOffering($ServiceId) {
     # Get service info
-    $Service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$ServiceId" -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
+    $Service = Invoke-RestMethod -Method 'Get' -Uri ("$Domain" + "TDWebApi/api/81/services/$ServiceId") -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
     # Write-Host ($Service | Format-List -Force | Out-String)
 
     # Get tags from original service (not obtainable from API)
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceDet?ID=$ServiceId" -Driver $Driver
+    Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/ServiceDet?ID=$ServiceId") -Driver $Driver
     $ServiceTagsElements = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_cpContent_cpContent_divTags']/a"
     $ServiceTags = @()
     foreach ($tag in $ServiceTagsElements) {  
@@ -15,7 +15,7 @@ function New-ServiceOffering($ServiceId) {
     }
     
     # Start service creation
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId" -Driver $Driver
+    Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId") -Driver $Driver
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
  
     # Copy form and settings from parent service
