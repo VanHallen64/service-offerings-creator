@@ -3,7 +3,7 @@
 function New-ServiceOffering($ServiceId) {
     # Get service info
     $Service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$ServiceId" -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
-    Write-Host ($Service | Format-List -Force | Out-String)
+    # Write-Host ($Service | Format-List -Force | Out-String)
 
     # Get tags from original service (not obtainable from API)
     Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceDet?ID=$ServiceId" -Driver $Driver
@@ -19,7 +19,7 @@ function New-ServiceOffering($ServiceId) {
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
  
     # Copy form and settings from parent service
-    $Checkbox = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_chkCopyServiceSettings"
+    $Checkbox = Find-SeElement -Wait -Timeout 3 -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_chkCopyServiceSettings"
     Invoke-SeClick -Element $Checkbox
 
     # Name
@@ -82,8 +82,9 @@ function New-ServiceOffering($ServiceId) {
     Invoke-SeClick -Element $SaveBtn
 
     # Get newly created service offering ID
-    $ServiceId = Find-SeElement -Driver $Driver -Id ="divServiceID"
-    $ServiceId = $ServiceId.Text
+    $ServiceOfferingId = Find-SeElement -Wait -Timeout 5 -Driver $Driver -Id "divServiceID"
+    $ServiceOfferingId = $ServiceOfferingId.Text
+    $ServiceOfferingId = $ServiceOfferingId.Substring(21) # Remove 'Service Offering ID: ' from result
 
-    return $ServiceId
+    return $ServiceOfferingId
 }

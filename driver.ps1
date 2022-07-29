@@ -5,6 +5,7 @@
 Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 Import-Module "$PSScriptRoot\Modules\AnyBox\AnyBox.psd1"
 
+# User prompts
 $prompt = New-AnyBoxPrompt -Name "Name" -Message 'Service name or service ID' -ValidateNotEmpty
 $ServiceNameInput = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
 $ServiceName = $ServiceNameInput.Name
@@ -34,12 +35,14 @@ $auth_headers = @{
 }
 $Services = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services" -Headers $auth_headers
 
-# Get service ID
+# Service name and ID validation
 if($ServiceName -notmatch '^\d+$') { # If input is a service name   
     $ServiceId = ($Services | Where-Object {$_.Name -eq $ServiceName}).ID
 } else {
     $ServiceId = $ServiceName
 }
+$ServiceName = ($Services | Where-Object {$_.ID -eq $ServiceId}).Name
+$GTSServiceOfferingName = "General $ServiceShortName Support"
 
 # Start browser
 $Driver = Start-SeFirefox
@@ -47,17 +50,13 @@ $WindowSize = [System.Drawing.Size]::new(800, 700)
 $driver.Manage().Window.Size = $WindowSize
 
 # Create new service offering
-$ServiceOfferingId = New-ServiceOffering($ServiceId)
-
-# Open new tab
-# $Driver.ExecuteScript("window.open()")
-# $Windows = Get-SeWindow -Driver $Driver
-# Switch-SeWindow -Driver $Driver -Window $Windows[1]
+$ServiceOfferingId = New-ServiceOffering $ServiceId
 
 # Create new General Technical Support service offering
-New-GTSServiceOffering $ServiceId $ServiceShortName
+$GTSServiceOfferingId = New-GTSServiceOffering $ServiceId $GTSServiceOfferingName
 
-New-AutomationRule $ServiceOfferingId $ServiceName $EvalOrder
+# Create GTS Automation Rule
+New-AutomationRule $ServiceOfferingId $GTSServiceOfferingId $GTSServiceOfferingName $ServiceName $EvalOrder
 
 # Close driver
 Stop-SeDriver -Driver $Driver

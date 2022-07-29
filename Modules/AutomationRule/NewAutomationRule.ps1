@@ -1,6 +1,7 @@
 #------ Create General Service Offering ------#
 
-function New-AutomationRule($ServiceOfferingId, $ServiceName, $EvalOrder) {
+function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServiceOfferingName, $ServiceName, $EvalOrder) {
+    Write-Host $ServiceOfferingId
     # Get ticket designated asignee
     Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/TicketRequests/PreviewForm?id=$ServiceOfferingId&previewMode=1&requestInitiator=ServiceOffering" -Driver $Driver
     $Assignee = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "select2-chosen-7"
@@ -48,6 +49,22 @@ function New-AutomationRule($ServiceOfferingId, $ServiceName, $EvalOrder) {
     $SelectElement = [OpenQA.Selenium.Support.UI.SelectElement]::new($Option)
     $SelectElement.SelectByValue(5315)
     $CurrentField = Find-SeElement -Driver $Driver -Id "lu_text_0"
+    $SearchBtn = Find-SeElement -Driver $Driver -XPath "//table//tbody//tr//td//div//span//a[@data-textid='lu_text_0']"
+    Invoke-SeClick -Element $SearchBtn
+    $Windows = Get-SeWindow -Driver $Driver
+    Switch-SeWindow -Driver $Driver -Window $Windows[1]
+    $CurrentField = Find-SeElement -Wait -Timeout 3 -Driver $Driver -Id "searchText"
+    Send-SeKeys -Element $CurrentField -Keys $GTSServiceOfferingName
+    $SearchBtn = Find-SeElement -Driver $Driver -XPath "//button[@title='Search']"
+    Invoke-SeClick -Element $SearchBtn
+    $WebDriverWait = [OpenQA.Selenium.Support.UI.WebDriverWait]::new($Driver, (New-TimeSpan -Seconds 20))
+    $Condition = [OpenQA.Selenium.Support.UI.ExpectedConditions]::InvisibilityOfElementLocated(([OpenQA.Selenium.By]::ClassName("WhiteOut")))
+    $WebDriverWait.Until($Condition) | Out-null
+    $ServiceCheckbox = Find-SeElement -Wait -Timeout 3 -Driver $Driver -Id $GTSServiceOfferingId
+    Invoke-SeClick -Element $ServiceCheckbox
+    $InsertBtn = Find-SeElement -Driver $Driver -XPath "//div[@class='pull-left']//button[2]"
+    Invoke-SeClick -Element $InsertBtn
+    Switch-SeWindow -Driver $Driver -Window $Windows[0]
 
     # Automation Actions
     $CurrentField = Find-SeElement -Driver $Driver -Id "select2-chosen-7"

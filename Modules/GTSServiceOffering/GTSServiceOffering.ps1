@@ -1,16 +1,16 @@
 #------ Create General Service Offering ------#
 
-function New-GTSServiceOffering($ServiceId, $ServiceShortName) {
+function New-GTSServiceOffering($ServiceId, $GTSServiceOfferingName) {
     Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId" -Driver $Driver
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
 
     # Name
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtName"
-    Send-SeKeys -Element $CurrentField -Keys "General $ServiceShortName Support"
+    Send-SeKeys -Element $CurrentField -Keys $GTSServiceOfferingName
 
     # Short Description
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtShortDescription"
-    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a General $ServiceShortName Support ticket."
+    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a General $GTSServiceOfferingName Support ticket."
 
     # Long Description
     $SourceBtn = Find-SeElement -Wait -Timeout 15 -Driver $Driver -Id "cke_16"
@@ -19,7 +19,7 @@ function New-GTSServiceOffering($ServiceId, $ServiceShortName) {
     $WebDriverWait.Until($Condition) | Out-null
     Invoke-SeClick -Element $SourceBtn
     $CurrentField = Find-SeElement -Wait -Timeout 10 -Driver $Driver -XPath '//div[@id="cke_1_contents"]//textarea'
-    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a General $ServiceShortName Support ticket."
+    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a General $GTSServiceOfferingName Support ticket."
     
     # Order
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtOrder"
@@ -46,7 +46,7 @@ function New-GTSServiceOffering($ServiceId, $ServiceShortName) {
 
     # Request Service Offering Text
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtRequestText"
-    Send-SeKeys -Element $CurrentField -Keys "General $ServiceShortName Support"
+    Send-SeKeys -Element $CurrentField -Keys $GTSServiceOfferingName
 
     # Tags
     $GeneralTags = @("general", "technical", "support", "GTS")
@@ -62,6 +62,11 @@ function New-GTSServiceOffering($ServiceId, $ServiceShortName) {
     $SaveBtn = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_btnSave"
     Invoke-SeClick -Element $SaveBtn
 
+    # Get newly created service offering ID
+    $GTSServiceId = Find-SeElement -Wait -Timeout 5 -Driver $Driver -Id "divServiceID"
+    $GTSServiceId = $GTSServiceId.Text
+    $GTSServiceId = $GTSServiceId.Substring(21) # Remove 'Service Offering ID: ' from result
+
     # Select form
     $EditBtn = Find-SeElement -Driver $Driver -Wait -Timeout 60 -XPath "//span[@id='ctl00_ctl00_cpContent_cpContent_lnkEdit']/a"
     Invoke-SeClick -Element $EditBtn
@@ -76,10 +81,6 @@ function New-GTSServiceOffering($ServiceId, $ServiceShortName) {
     # Save form
     $SaveBtn = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_btnSaveNew"
     Invoke-SeClick -Element $SaveBtn
-
-    # Get newly created service offering ID
-    $GTSServiceId = Find-SeElement -Driver $Driver -Id ="divServiceID"
-    $GTSServiceId = $GTSServiceId.Text
 
     return $GTSServiceId
 }
