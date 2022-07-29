@@ -13,6 +13,10 @@ $prompt = New-AnyBoxPrompt -Name "Name" -Message 'Short name of the service for 
 $ServiceShortNameInput = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
 $ServiceShortName = $ServiceShortNameInput.Name
 
+$Prompt = New-AnyBoxPrompt -Name "Num" -Message 'GTS Automation Rule evaluation order' -ValidateNotEmpty
+$EvalOrderInput = Show-AnyBox -Prompt $Prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
+$EvalOrder = $EvalOrderInput.Num
+
 if ($ServiceNameInput.Cancel -or $ServiceShortNameInput.Cancel) {
     Show-AnyBox -Message "No service information provided" -Buttons 'Ok'
     Exit
@@ -53,7 +57,7 @@ $ServiceOfferingId = New-ServiceOffering($ServiceId)
 # Create new General Technical Support service offering
 New-GTSServiceOffering $ServiceId $ServiceShortName
 
-New-AutomationRule $ServiceOfferingId $ServiceName
+New-AutomationRule $ServiceOfferingId $ServiceName $EvalOrder
 
 # Close driver
 Stop-SeDriver -Driver $Driver

@@ -1,6 +1,6 @@
 #------ Create General Service Offering ------#
 
-function New-AutomationRule($ServiceOfferingId, $ServiceName) {
+function New-AutomationRule($ServiceOfferingId, $ServiceName, $EvalOrder) {
     # Get ticket designated asignee
     Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/TicketRequests/PreviewForm?id=$ServiceOfferingId&previewMode=1&requestInitiator=ServiceOffering" -Driver $Driver
     $Assignee = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "select2-chosen-7"
@@ -19,9 +19,6 @@ function New-AutomationRule($ServiceOfferingId, $ServiceName) {
     Send-SeKeys -Element $CurrentField -Keys "GTS $ServiceName - Assign to $Assignee"
 
     # Order
-    $Prompt = New-AnyBoxPrompt -Name "Num" -Message 'Rule evaluation order' -ValidateNotEmpty
-    $EvalOrderInput = Show-AnyBox -Prompt $Prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
-    $EvalOrder = $EvalOrderInput.Num
     $CurrentField = Find-SeElement -Driver $Driver -Id "Order"
     $CurrentField.SendKeys([OpenQA.Selenium.Keys]::Backspace)
     Send-SeKeys -Element $CurrentField -Keys $EvalOrder
