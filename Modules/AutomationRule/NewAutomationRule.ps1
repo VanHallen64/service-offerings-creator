@@ -73,4 +73,8 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
     Send-SeKeys -Element $CurrentField -Keys $AssigneeShort
     $Selection = Find-SeElement -Driver $Driver -XPath "//div[@class='select2-result-label']//div[text()='$Assignee']"
     Invoke-SeClick -Element $Selection
+
+    # Save edit
+    $SaveBtn = Find-SeElement -Driver $Driver -XPath "//div[@id='divButtons']//button[@class='btn btn-primary']"
+    Invoke-SeClick -Element $SaveBtn
 }
