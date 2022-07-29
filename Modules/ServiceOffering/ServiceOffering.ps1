@@ -1,8 +1,12 @@
 #------ Create Main Service Offering ------#
 
-function New-ServiceOffering {
-    # Get tags from original service
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceDet?ID=$service_ID" -Driver $Driver
+function New-ServiceOffering($ServiceId) {
+    # Get service info
+    $Service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$ServiceId" -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
+    # Write-Host ($Service | Format-List -Force | Out-String)
+
+    # Get tags from original service (not obtainable from API)
+    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceDet?ID=$ServiceId" -Driver $Driver
     $ServiceTagsElements = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_cpContent_cpContent_divTags']/a"
     $ServiceTags = @()
     foreach ($tag in $ServiceTagsElements) {  
@@ -11,7 +15,7 @@ function New-ServiceOffering {
     }
     
     # Start service creation
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$service_ID" -Driver $Driver
+    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId" -Driver $Driver
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
  
     # Copy form and settings from parent service
@@ -20,11 +24,11 @@ function New-ServiceOffering {
 
     # Name
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtName"
-    Send-SeKeys -Element $CurrentField -Keys $service.Name
+    Send-SeKeys -Element $CurrentField -Keys $Service.Name
 
     # Short Description
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtShortDescription"
-    Send-SeKeys -Element $CurrentField -Keys $service.ShortDescription
+    Send-SeKeys -Element $CurrentField -Keys $Service.ShortDescription
 
     # Long Description
     $SourceBtn = Find-SeElement -Wait -Timeout 15 -Driver $Driver -Id "cke_16"
@@ -33,35 +37,35 @@ function New-ServiceOffering {
     $WebDriverWait.Until($Condition) | Out-null
     Invoke-SeClick -Element $SourceBtn
     $CurrentField = Find-SeElement -Wait -Timeout 10 -Driver $Driver -XPath '//div[@id="cke_1_contents"]//textarea'
-    Send-SeKeys -Element $CurrentField -Keys $service.LongDescription
+    Send-SeKeys -Element $CurrentField -Keys $Service.LongDescription
 
     # Manager
     $CloseBtn = Find-SeElement -Driver $Driver -CssSelector ".closebutton"
     Invoke-SeClick -Element $CloseBtn
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_taluManager_txtinput"
-    if ($service.ManagingGroupID -eq 0) { # If Manager is an individual
-        Send-SeKeys -Element $CurrentField -Keys $service.ManagerFullName
-        $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($service.ManagerUid)']"
+    if ($Service.ManagingGroupID -eq 0) { # If Manager is an individual
+        Send-SeKeys -Element $CurrentField -Keys $Service.ManagerFullName
+        $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($Service.ManagerUid)']"
     } else { # If Manager is a group
-        Send-SeKeys -Element $CurrentField -Keys $service.ManagingGroupName
-        $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($service.ManagingGroupID)']"
+        Send-SeKeys -Element $CurrentField -Keys $Service.ManagingGroupName
+        $CurrentField = Find-SeElement -Driver $Driver -CssSelector "#ctl00_ctl00_cpContent_cpContent_taluManager_txttaluManager_feed > li[rel='$($Service.ManagingGroupID)']"
     }
     Invoke-SeClick -Element $CurrentField
 
     # Request Application Type
     $Option = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_ddlRequestApplication"
     $SelectElement = [OpenQA.Selenium.Support.UI.SelectElement]::new($Option)
-    $SelectElement.SelectByValue($service.RequestApplicationID)
+    $SelectElement.SelectByValue($Service.RequestApplicationID)
 
     # Request Type ID
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_taluRequestType_txtinput"
-    Send-SeKeys -Element $CurrentField -Keys $service.RequestTypeName
-    $CurrentField = Find-SeElement -Driver $Driver -XPath "//ul[@id='ctl00_ctl00_cpContent_cpContent_taluRequestType_txttaluRequestType_feed']//li[@rel=$($service.RequestTypeID)]"
+    Send-SeKeys -Element $CurrentField -Keys $Service.RequestTypeName
+    $CurrentField = Find-SeElement -Driver $Driver -XPath "//ul[@id='ctl00_ctl00_cpContent_cpContent_taluRequestType_txttaluRequestType_feed']//li[@rel=$($Service.RequestTypeID)]"
     Invoke-SeClick -Element $CurrentField
 
     # Request Service Offering Text
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtRequestText"
-    Send-SeKeys -Element $CurrentField -Keys $($service.RequestText)
+    Send-SeKeys -Element $CurrentField -Keys $($Service.RequestText)
 
     # Tags
     if($ServiceTags.count -gt 0) {
@@ -76,4 +80,10 @@ function New-ServiceOffering {
     # Save
     $SaveBtn = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_btnSave"
     Invoke-SeClick -Element $SaveBtn
+
+    # Get newly created service offering ID
+    $ServiceId = Find-SeElement -Driver $Driver -Id ="divServiceID"
+    $ServiceId = $ServiceId.Text
+
+    return $ServiceId
 }

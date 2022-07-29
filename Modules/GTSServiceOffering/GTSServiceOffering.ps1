@@ -1,7 +1,7 @@
 #------ Create General Service Offering ------#
 
-function New-GTSServiceOffering {
-    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$service_ID" -Driver $Driver
+function New-GTSServiceOffering($ServiceId, $ServiceShortName) {
+    Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceOfferings/New?ServiceID=$ServiceId" -Driver $Driver
     Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
 
     # Name
@@ -71,9 +71,15 @@ function New-GTSServiceOffering {
     Invoke-SeClick -Element $SelectFormRadio
     $Option = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_ddlRequestForm"
     $SelectElement = [OpenQA.Selenium.Support.UI.SelectElement]::new($Option)
-    $SelectElement.SelectByValue(375)
+    $SelectElement.SelectByValue(375) # 'Request a Service' form ID is 375
 
     # Save form
     $SaveBtn = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_btnSaveNew"
     Invoke-SeClick -Element $SaveBtn
+
+    # Get newly created service offering ID
+    $GTSServiceId = Find-SeElement -Driver $Driver -Id ="divServiceID"
+    $GTSServiceId = $GTSServiceId.Text
+
+    return $GTSServiceId
 }

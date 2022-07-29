@@ -1,7 +1,7 @@
 ﻿# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 . "$PSScriptRoot\Modules\ServiceOffering\ServiceOffering.ps1"
 . "$PSScriptRoot\Modules\GTSServiceOffering\GTSServiceOffering.ps1"
-. "$PSScriptRoot\Modules\AutomationRule\New-AutomationRule.ps1"
+. "$PSScriptRoot\Modules\AutomationRule\NewAutomationRule.ps1"
 Import-Module "$PSScriptRoot\Modules\Selenium\3.0.1\Selenium.psd1"
 Import-Module "$PSScriptRoot\Modules\AnyBox\AnyBox.psd1"
 
@@ -30,14 +30,12 @@ $auth_headers = @{
 }
 $Services = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services" -Headers $auth_headers
 
-# Get original service data
+# Get service ID
 if($ServiceName -notmatch '^\d+$') { # If input is a service name   
-    $service_ID = ($Services | Where-Object {$_.Name -eq $ServiceName}).ID
+    $ServiceId = ($Services | Where-Object {$_.Name -eq $ServiceName}).ID
 } else {
-    $service_ID = $ServiceName
+    $ServiceId = $ServiceName
 }
-$service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$service_ID" -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
-# Write-Host ($service | Format-List -Force | Out-String)
 
 # Start browser
 $Driver = Start-SeFirefox
@@ -45,15 +43,17 @@ $WindowSize = [System.Drawing.Size]::new(800, 700)
 $driver.Manage().Window.Size = $WindowSize
 
 # Create new service offering
-New-ServiceOffering
+$ServiceOfferingId = New-ServiceOffering($ServiceId)
 
 # Open new tab
-$Driver.ExecuteScript("window.open()")
-$Windows = Get-SeWindow -Driver $Driver
-Switch-SeWindow -Driver $Driver -Window $Windows[1]
+# $Driver.ExecuteScript("window.open()")
+# $Windows = Get-SeWindow -Driver $Driver
+# Switch-SeWindow -Driver $Driver -Window $Windows[1]
 
 # Create new General Technical Support service offering
-New-GTSServiceOffering
+New-GTSServiceOffering $ServiceId $ServiceShortName
+
+# New-AutomationRule 586
 
 # Close driver
 Stop-SeDriver -Driver $Driver
