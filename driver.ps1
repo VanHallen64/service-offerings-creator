@@ -53,7 +53,7 @@ $ServiceOfferingId = New-ServiceOffering($ServiceId)
 # Create new General Technical Support service offering
 New-GTSServiceOffering $ServiceId $ServiceShortName
 
-# New-AutomationRule 586
+New-AutomationRule $ServiceOfferingId $ServiceName
 
 # Close driver
 Stop-SeDriver -Driver $Driver

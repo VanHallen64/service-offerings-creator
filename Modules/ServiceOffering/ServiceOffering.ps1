@@ -3,7 +3,7 @@
 function New-ServiceOffering($ServiceId) {
     # Get service info
     $Service = Invoke-RestMethod -Method 'Get' -Uri "https://langara.teamdynamix.com/SBTDWebApi/api/81/services/$ServiceId" -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
-    # Write-Host ($Service | Format-List -Force | Out-String)
+    Write-Host ($Service | Format-List -Force | Out-String)
 
     # Get tags from original service (not obtainable from API)
     Enter-SeUrl "https://langara.teamdynamix.com/SBTDClient/81/askit/Requests/ServiceDet?ID=$ServiceId" -Driver $Driver
