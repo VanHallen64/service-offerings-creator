@@ -4,13 +4,15 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
     # Get ticket designated asignee
     Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/TicketRequests/PreviewForm?id=$ServiceOfferingId&previewMode=1&requestInitiator=ServiceOffering") -Driver $Driver
     $Assignee = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "select2-chosen-7"
-    Write-Host ($AssigneeId | Format-List -Force | Out-String)
     $Assignee = $Assignee.Text
+    if($Assignee -eq 'Start typing...') { # If there is no assignee in the form, rule is not needed
+        return
+    }
     if ($Assignee.Contains("Group")) { # Remove the word '(Group)' from the name
         $AssigneeShort = $Assignee.Substring(0,$Assignee.Length-8)
     }
 
-    # New service
+    # New rule
     Enter-SeUrl ("$Domain"+"TDAdmin/1cc3ff6f-33a6-4148-b145-f5581a4f32bd/82/AutomationRules/Index?Component=9") -Driver $Driver
     $NewBtn = Find-SeElement -Wait -Timeout 60 -Driver $Driver -XPath '//a[@class="btn btn-primary"]'
     Invoke-SeClick -Element $NewBtn
