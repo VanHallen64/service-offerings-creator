@@ -10,7 +10,7 @@ function New-GTSServiceOffering($ServiceId, $GTSServiceOfferingName) {
 
     # Short Description
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtShortDescription"
-    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a General $GTSServiceOfferingName Support ticket."
+    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a $GTSServiceOfferingName ticket."
 
     # Long Description
     $SourceBtn = Find-SeElement -Wait -Timeout 15 -Driver $Driver -Id "cke_16"
@@ -19,7 +19,7 @@ function New-GTSServiceOffering($ServiceId, $GTSServiceOfferingName) {
     $WebDriverWait.Until($Condition) | Out-null
     Invoke-SeClick -Element $SourceBtn
     $CurrentField = Find-SeElement -Wait -Timeout 10 -Driver $Driver -XPath '//div[@id="cke_1_contents"]//textarea'
-    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a General $GTSServiceOfferingName Support ticket."
+    Send-SeKeys -Element $CurrentField -Keys "If you haven't found the $ServicShortName service that you want, you can submit a $GTSServiceOfferingName ticket."
     
     # Order
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtOrder"

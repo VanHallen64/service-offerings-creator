@@ -9,7 +9,6 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
     Invoke-SeClick -Element $GoToForm
     $FormName = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_divSettingsPanel']/h2"
     $FormName = $FormName.Text
-    Write-Host $FormName
     
     # Get responsible ID
     Enter-SeUrl ("$Domain"+"TDAdmin/1CC3FF6F-33A6-4148-B145-F5581A4F32BD/82/Service/Forms.aspx?ComponentID=9") -Driver $Driver
