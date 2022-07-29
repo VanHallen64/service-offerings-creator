@@ -1,16 +1,39 @@
 #------ Create General Service Offering ------#
 
 function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServiceOfferingName, $ServiceName, $EvalOrder) {
-    # Get ticket designated asignee
-    Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/TicketRequests/PreviewForm?id=$ServiceOfferingId&previewMode=1&requestInitiator=ServiceOffering") -Driver $Driver
-    $Assignee = Find-SeElement -Wait -Timeout 10 -Driver $Driver -Id "select2-chosen-7"
-    $Assignee = $Assignee.Text
-    if($Assignee -eq 'Start typing...') { # If there is no assignee in the form, rule is not needed
-        return
+    # Get form name
+    Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/ServiceOfferingDet?ID=$ServiceOfferingId") -Driver $Driver
+    $EditBtn = Find-SeElement -Wait -Timeout 60 -Driver $Driver -XPath "//span[@id='ctl00_ctl00_cpContent_cpContent_lnkEdit']//a"
+    Invoke-SeClick -Element $EditBtn
+    $GoToForm = Find-SeElement -Driver $Driver -XPath "//ul[@class='nav nav-shelf']//li//a[contains(@href,'Form')]"
+    Invoke-SeClick -Element $GoToForm
+    $FormName = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_divSettingsPanel']/h2"
+    $FormName = $FormName.Text
+    Write-Host $FormName
+    
+    # Get responsible ID
+    Enter-SeUrl ("$Domain"+"TDAdmin/1CC3FF6F-33A6-4148-B145-F5581A4F32BD/82/Service/Forms.aspx?ComponentID=9") -Driver $Driver
+    $CurrentField = Find-SeElement -Driver $Driver -Id "txtSearch"
+    Send-SeKeys -Element $CurrentField -Keys $FormName
+    $SearchBtn = Find-SeElement -Driver $Driver -Id "btnSearch"
+    Invoke-SeClick -Element $SearchBtn
+    $SelectForm = Find-SeElement -Driver $Driver -XPath "//td//a[contains(text(),'$FormName')]"
+    Invoke-SeClick -Element $SelectForm
+    $Windows = Get-SeWindow -Driver $Driver
+    Switch-SeWindow -Driver $Driver -Window $Windows[1]
+    $ResponsibleId = Find-SeElement -Driver $Driver -Id "a_1279-value"
+    $ResponsibleId = Get-SeElementAttribute -Element $ResponsibleId -Attribute "value"
+
+    # Get responsible name
+    try {
+        $Responsible = Invoke-RestMethod -Method 'Get' -Uri ("$Domain" + "TDWebApi/api/groups/$ResponsibleId") -Headers $auth_headers
     }
-    if ($Assignee.Contains("Group")) { # Remove the word '(Group)' from the name
-        $AssigneeShort = $Assignee.Substring(0,$Assignee.Length-8)
+    catch {
+        $Responsible = Invoke-RestMethod -Method 'Get' -Uri ("$Domain" + "TDWebApi/api/people/$ResponsibleId") -Headers $auth_headers
     }
+    $Responsible = $Responsible.Name
+    $Driver.Close()
+    Switch-SeWindow -Driver $Driver -Window $Windows[0]
 
     # New rule
     Enter-SeUrl ("$Domain"+"TDAdmin/1cc3ff6f-33a6-4148-b145-f5581a4f32bd/82/AutomationRules/Index?Component=9") -Driver $Driver
@@ -19,7 +42,7 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
 
     # Name
     $CurrentField = Find-SeElement -Driver $Driver -Id "Name"
-    Send-SeKeys -Element $CurrentField -Keys "GTS $ServiceName - Assign to $Assignee"
+    Send-SeKeys -Element $CurrentField -Keys "GTS $ServiceName - Assign to $Responsible"
 
     # Order
     $CurrentField = Find-SeElement -Driver $Driver -Id "Order"
@@ -32,7 +55,7 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
 
     # Description
     $CurrentField = Find-SeElement -Driver $Driver -Id "Description"
-    Send-SeKeys -Element $CurrentField -Keys "This rule assigns General Technical Support tickets created under the $ServiceName service to $Assignee."
+    Send-SeKeys -Element $CurrentField -Keys "This rule assigns General Technical Support tickets created under the $ServiceName service to $Responsible."
 
     # Save
     $SaveBtn = Find-SeElement -Driver $Driver -XPath '//div[@id="divButtons"]//button//span[text()="Save"]'
@@ -72,8 +95,8 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
     $CurrentField = Find-SeElement -Driver $Driver -Id "select2-chosen-7"
     Invoke-SeClick -Element $CurrentField
     $CurrentField = Find-SeElement -Driver $Driver -Id "s2id_autogen7_search"
-    Send-SeKeys -Element $CurrentField -Keys $AssigneeShort
-    $Selection = Find-SeElement -Driver $Driver -XPath "//div[@class='select2-result-label']//div[text()='$Assignee']"
+    Send-SeKeys -Element $CurrentField -Keys $Responsible
+    $Selection = Find-SeElement -Driver $Driver -XPath "//div[@class='select2-result-label']//div[contains(text(),'$Responsible')]"
     Invoke-SeClick -Element $Selection
 
     # Save edit

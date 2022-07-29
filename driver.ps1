@@ -66,5 +66,5 @@ $GTSServiceOfferingId = New-GTSServiceOffering $ServiceId $GTSServiceOfferingNam
 # Create GTS Automation Rule
 New-AutomationRule $ServiceOfferingId $GTSServiceOfferingId $GTSServiceOfferingName $ServiceName $EvalOrder
 
-# Close driver
+# Stop driver
 Stop-SeDriver -Driver $Driver
