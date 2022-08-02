@@ -7,6 +7,7 @@ function New-ServiceOffering($ServiceId) {
 
     # Get tags from original service (not obtainable from API)
     Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/ServiceDet?ID=$ServiceId") -Driver $Driver
+    Find-SeElement -Driver $Driver -Wait -Timeout 60 -Id "servicesContent" | Out-null
     $ServiceTagsElements = Find-SeElement -Driver $Driver -XPath "//div[@id='ctl00_ctl00_cpContent_cpContent_divTags']/a"
     $ServiceTags = @()
     foreach ($tag in $ServiceTagsElements) {  
