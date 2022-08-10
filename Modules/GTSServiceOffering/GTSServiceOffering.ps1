@@ -76,7 +76,7 @@ function New-GTSServiceOffering($ServiceId, $GTSServiceOfferingName) {
     Invoke-SeClick -Element $SelectFormRadio
     $Option = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_ddlRequestForm"
     $SelectElement = [OpenQA.Selenium.Support.UI.SelectElement]::new($Option)
-    $SelectElement.SelectByValue(375) # 'Request a Service' form ID is 375
+    $SelectElement.SelectByValue(375) # 'Service Request Form' ID is 375
 
     # Save form
     $SaveBtn = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_ctl00_cpContent_cpContent_cpContent_btnSaveNew"
