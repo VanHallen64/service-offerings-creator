@@ -14,20 +14,26 @@ if ($ProdInput.Production) {
     $Domain = "https://langara.teamdynamix.com/SB"
 }
 
-$prompt = New-AnyBoxPrompt -Name "Name" -Message 'Service name or service ID:' -ValidateNotEmpty
-$ServiceNameInput = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
-$ServiceName = $ServiceNameInput.Name
+$PromptBox = New-Object AnyBox.AnyBox
+$PromptBox.Title = 'Service Creator'
+$PromptBox.Prompts = @(
+    New-AnyBoxPrompt -Name "ServiceName" -Message 'Service name or service ID to copy from:' -ValidateNotEmpty
+    New-AnyBoxPrompt -Name "ServiceOfferingName" -Message 'Name of the new service offering:' -ValidateNotEmpty
+    New-AnyBoxPrompt -Name "GTSOfferingName" -Message 'Short name of general support service offering. This will generate General -shortname- Support:' -ValidateNotEmpty
+    New-AnyBoxPrompt -Name "EvalOrder" -Message 'GTS Automation Rule evaluation order:' -ValidateNotEmpty
+)
+$PromptBox.Buttons = @(
+    New-AnyBoxButton -Text 'Submit' -IsDefault
+    New-AnyBoxButton -Text 'Cancel' -IsCancel
+)
+$UserInput = $PromptBox | Show-AnyBox
 
-$prompt = New-AnyBoxPrompt -Name "Name" -Message 'Short name of the service for general support. This will generate General -shortname- Support:' -ValidateNotEmpty
-$ServiceShortNameInput = Show-AnyBox -Prompt $prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
-$ServiceShortName = $ServiceShortNameInput.Name
+$ServiceName = $UserInput.ServiceName
+$ServiceShortName = $UserInput.GTSOfferingName
+$EvalOrder = $UserInput.EvalOrder
 
-$Prompt = New-AnyBoxPrompt -Name "Num" -Message 'GTS Automation Rule evaluation order:' -ValidateNotEmpty
-$EvalOrderInput = Show-AnyBox -Prompt $Prompt -Buttons 'Submit', 'Cancel' -DefaultButton 'Submit' -CancelButton 'Cancel'
-$EvalOrder = $EvalOrderInput.Num
-
-if ($ServiceNameInput.Cancel -or $ServiceShortNameInput.Cancel) {
-    Show-AnyBox -Message "No service information provided" -Buttons 'Ok'
+if ($UserInput.Cancel) {
+    Show-AnyBox -Message "Operation cancelled" -Buttons 'Ok'
     Exit
 }
 
@@ -58,7 +64,7 @@ $WindowSize = [System.Drawing.Size]::new(800, 700)
 $driver.Manage().Window.Size = $WindowSize
 
 # Create new service offering
-$ServiceOfferingId = New-ServiceOffering $ServiceId
+$ServiceOfferingId = New-ServiceOffering $ServiceId $ServiceName
 
 # Create new General Technical Support service offering
 $GTSServiceOfferingId = New-GTSServiceOffering $ServiceId $GTSServiceOfferingName
@@ -68,3 +74,4 @@ New-AutomationRule $ServiceOfferingId $GTSServiceOfferingId $GTSServiceOfferingN
 
 # Stop driver
 Stop-SeDriver -Driver $Driver
+Show-AnyBox -Message "Service created" -Button "Ok" -DefaultButton "Ok"

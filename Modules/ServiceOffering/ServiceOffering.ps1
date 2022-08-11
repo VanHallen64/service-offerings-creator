@@ -1,9 +1,8 @@
 #------ Create Main Service Offering ------#
 
-function New-ServiceOffering($ServiceId) {
+function New-ServiceOffering($ServiceId, $ServiceName) {
     # Get service info
     $Service = Invoke-RestMethod -Method 'Get' -Uri ("$Domain" + "TDWebApi/api/81/services/$ServiceId") -Headers $auth_headers # Call to the API needs to be done again as $Services does not contain all necessary data
-    # Write-Host ($Service | Format-List -Force | Out-String)
 
     # Get tags from original service (not obtainable from API)
     Enter-SeUrl ("$Domain"+"TDClient/81/askit/Requests/ServiceDet?ID=$ServiceId") -Driver $Driver
@@ -25,7 +24,7 @@ function New-ServiceOffering($ServiceId) {
 
     # Name
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtName"
-    Send-SeKeys -Element $CurrentField -Keys $Service.Name
+    Send-SeKeys -Element $CurrentField -Keys $ServiceName
 
     # Short Description
     $CurrentField = Find-SeElement -Driver $Driver -Id "ctl00_ctl00_cpContent_cpContent_txtShortDescription"
