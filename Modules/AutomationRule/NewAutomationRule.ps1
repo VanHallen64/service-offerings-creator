@@ -71,9 +71,8 @@ function New-AutomationRule($ServiceOfferingId, $GTSServiceOfferingId, $GTSServi
     # Automation Conditions
     $Option = Find-SeElement -Driver $Driver -Id "filter_column_0"
     $SelectElement = [OpenQA.Selenium.Support.UI.SelectElement]::new($Option)
-    $SelectElement.SelectByValue(5315)
-    $CurrentField = Find-SeElement -Driver $Driver -Id "lu_text_0"
-    $SearchBtn = Find-SeElement -Driver $Driver -XPath "//table//tbody//tr//td//div//span//a[@data-textid='lu_text_0']"
+    $SelectElement.SelectByValue(5315) # Condition is for Service Offering
+    $SearchBtn = Find-SeElement -Driver $Driver -XPath "//a[@data-textid='lu_text_0']"
     Invoke-SeClick -Element $SearchBtn
     $Windows = Get-SeWindow -Driver $Driver
     Switch-SeWindow -Driver $Driver -Window $Windows[1]
